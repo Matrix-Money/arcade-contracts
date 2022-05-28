@@ -30,6 +30,7 @@ contract Arcade is IArcade, RegistryAware {
   uint256 price;
 
   event LeaderboardUpdated(uint256 _leaderboardId);
+  event Deposited(address _user, uint256 _amount);
 
   constructor(
     address _ownerAddress,
@@ -65,12 +66,13 @@ contract Arcade is IArcade, RegistryAware {
   }
 
   function deposit(uint256 _amount) external override {
-    require(_amount > price, "amount > 0");
+    require(_amount >= price, "amount > 0");
     IERC20(utilityTokenAddress).safeTransferFrom(msg.sender, address(this), _amount);
     uint256 jackpotAmount = _amount.mul(25).div(100);
     uint256 buybackBurnAmount = _amount.sub(jackpotAmount);
     IERC20(utilityTokenAddress).safeTransfer(treasuryAddress, jackpotAmount);
     IERC20(utilityTokenAddress).safeTransfer(distributorAddress, buybackBurnAmount);
+    emit Deposited(msg.sender, _amount);
   }
 
   function addToLeaderboard(uint256 _leaderboardId, LeaderboardEntry[] calldata _entries)
